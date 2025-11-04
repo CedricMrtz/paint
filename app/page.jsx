@@ -7,6 +7,7 @@ export default function Home() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [isAdjustingBrush, setIsAdjustingBrush] = useState(false);
   const [brushSize, setBrushSize] = useState(20);
+  const [isErasing, setIsErasing] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -15,10 +16,24 @@ export default function Home() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 80;
 
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 20;
     ctx.lineCap = "round";
     ctx.strokeStyle = "white";
   }, []);
+
+  useEffect(() => {
+  const canvas = canvasRef.current;
+  const ctx = canvas.getContext("2d");
+
+  ctx.lineWidth = brushSize;
+
+  if (isErasing) {
+    ctx.globalCompositeOperation = "destination-out";
+  } else {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = "white"; 
+  }
+}, [brushSize, isErasing]);
 
   const startDrawing = (e) => {
     const canvas = canvasRef.current;
@@ -52,10 +67,10 @@ export default function Home() {
     <div className="flex flex-col w-full h-screen">
       {/* Option bar */}
       <div className="flex justify-end items-center w-full mt-5 px-5 gap-5 bg-white">
-        <img src="pencil.svg" alt="pencil" className="h-15 hover:scale-110 transition"/>
-        <img src="select.svg" alt="select" className="h-15 hover:scale-110 transition"/>
-        <img src="eraser.svg" alt="eraser" className="h-15 hover:scale-110 transition"/>
-        <img src="layers.svg" alt="layers" className="h-15 hover:scale-110 transition"/>
+        <img src="pencil.svg" alt="pencil" className={`h-15 hover:scale-110 transition opacity-50 ${!isErasing ? "opacity-100" : ""}`} onClick={() => setIsErasing(false)}/>
+        <img src="select.svg" alt="select" className="h-15 hover:scale-110 transition opacity-50"/>
+        <img src="eraser.svg" alt="eraser" className={`h-15 hover:scale-110 transition opacity-50 ${isErasing ? "opacity-100" : ""}`} onClick={() => setIsErasing(true)}/>
+        <img src="layers.svg" alt="layers" className={`h-15 hover:scale-110 transition opacity-50`}/>
       </div>
       {/* Canvas area */}
       <div className="grid grid-cols-[56px_1fr] w-full h-screen">
