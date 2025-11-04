@@ -1,9 +1,12 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
+import BrushSlider from "@/components/brushslider";
 
 export default function Home() {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isAdjustingBrush, setIsAdjustingBrush] = useState(false);
+  const [brushSize, setBrushSize] = useState(20);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -30,7 +33,7 @@ export default function Home() {
   };
 
   const draw = (e) => {
-    if (!isDrawing) return;
+    if (!isDrawing || isAdjustingBrush) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
@@ -46,24 +49,35 @@ export default function Home() {
   };
 
   return (
-    <>
-      <div className="grid grid-rows-[80px_auto] w-full h-screen">
-        {/* Option bar */}
-        <div className="flex justify-end items-center w-full mt-5 px-5 gap-5 bg-white">
-          <img src="pencil.svg" alt="pencil" className="h-15 hover:scale-110 transition"/>
-          <img src="select.svg" alt="select" className="h-15 hover:scale-110 transition"/>
-          <img src="eraser.svg" alt="eraser" className="h-15 hover:scale-110 transition"/>
-          <img src="layers.svg" alt="layers" className="h-15 hover:scale-110 transition"/>
-        </div>
-        <canvas
-          ref ={canvasRef}
-          className="border-2 border-black bg-black"
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-        />
+    <div className="flex flex-col w-full h-screen">
+      {/* Option bar */}
+      <div className="flex justify-end items-center w-full mt-5 px-5 gap-5 bg-white">
+        <img src="pencil.svg" alt="pencil" className="h-15 hover:scale-110 transition"/>
+        <img src="select.svg" alt="select" className="h-15 hover:scale-110 transition"/>
+        <img src="eraser.svg" alt="eraser" className="h-15 hover:scale-110 transition"/>
+        <img src="layers.svg" alt="layers" className="h-15 hover:scale-110 transition"/>
       </div>
-    </>
+      {/* Canvas area */}
+      <div className="grid grid-cols-[56px_1fr] w-full h-screen">
+        {/* Brush */}
+        <div className="flex items-center justify-center z-20 pointer-events-auto bg-transparent">
+          <BrushSlider value={brushSize} 
+                      onChange={(v) => setBrushSize(v)} 
+                      onAdjustStart={() => setIsAdjustingBrush(true)}
+                      onAdjustEnd={() => setIsAdjustingBrush(false)} />
+        </div>
+        {/* Canva */}
+        <div className="w-full h-full relative">
+          <canvas
+            ref ={canvasRef}
+            className="bg-black w-full h-full"
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
