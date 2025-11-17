@@ -8,6 +8,7 @@ export default function Home() {
   const [isErasing, setIsErasing] = useState(false);
   const [circle, setCircle] = useState(false);
   const [rectangle, setRectangle] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
   // Drawing modes
   const [isDrawing, setIsDrawing] = useState(false);
   const [initialPos, setInitialPos] = useState(null);
@@ -49,7 +50,12 @@ export default function Home() {
     ctx.globalCompositeOperation = "source-over";
     ctx.strokeStyle = color;
   }
-}, [brushSize, isErasing, color, circle, rectangle]);
+  else if (isSelecting) {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 5;
+  }
+}, [brushSize, isErasing, color, circle, rectangle, isSelecting, isDrawing]);
 
   const startDrawing = (e) => {
     const canvas = canvasRef.current;
@@ -57,9 +63,11 @@ export default function Home() {
 
     const x = e.nativeEvent.offsetX;
     const y = e.nativeEvent.offsetY;
-    if (pencil || isErasing) {
+    if (pencil || isErasing || isSelecting) {
       ctx.beginPath();
       ctx.moveTo(x, y);
+      setInitialPos({ x, y });
+      setTempImage(ctx.getImageData(0, 0, canvas.width, canvas.height));
       setIsDrawing(true);
     }else{ // for circle or rectangle
       setInitialPos({ x, y });
@@ -83,29 +91,46 @@ export default function Home() {
       ctx.lineTo(x, y);
       ctx.stroke();
     }else{
+      if (!tempImage) return;
       ctx.putImageData(tempImage, 0, 0);
 
       const dx = x - initialPos.x;
       const dy = y - initialPos.y;
 
-      ctx.beginPath();
-
-      if (rectangle) {
+      if (isSelecting){
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
         ctx.rect(initialPos.x, initialPos.y, dx, dy);
+        ctx.stroke();
+      }else{
+        ctx.beginPath();
+  
+        if (rectangle) {
+          ctx.rect(initialPos.x, initialPos.y, dx, dy);
+        }
+  
+        if (circle) {
+          const radius = Math.sqrt(dx * dx + dy * dy);
+          ctx.arc(initialPos.x, initialPos.y, radius, 0, Math.PI * 2);
+        }
+  
+        ctx.stroke();
       }
-
-      if (circle) {
-        const radius = Math.sqrt(dx * dx + dy * dy);
-        ctx.arc(initialPos.x, initialPos.y, radius, 0, Math.PI * 2);
-      }
-
-      ctx.stroke();
     }
 
   };
 
   const stopDrawing = () => {
     setIsDrawing(false);
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    ctx.setLineDash([]);
+
+    if(isSelecting){
+      // Here you can implement logic for selected area
+    }
   };
 
   return (
@@ -117,7 +142,7 @@ export default function Home() {
         <img src="circle.svg" alt="circle" className={`h-15 hover:scale-110 transition opacity-50 ${circle ? "opacity-100" : ""}`} onClick={() => { setCircle(true); setRectangle(false); setPencil(false); setIsErasing(false); }} />
         <img src="rectangle.svg" alt="select" className={`h-15 hover:scale-110 transition opacity-50 ${rectangle ? "opacity-100" : ""}`} onClick={() => { setRectangle(true); setCircle(false); setPencil(false); setIsErasing(false); }} />
         <img src="eraser.svg" alt="eraser" className={`h-15 hover:scale-110 transition opacity-50 ${isErasing ? "opacity-100" : ""}`} onClick={() => { setIsErasing(true); setPencil(false); setCircle(false); setRectangle(false); }} />
-        <img src="select.svg" alt="layers" className={`h-15 hover:scale-110 transition opacity-50`}/>
+        <img src="select.svg" alt="layers" className={`h-15 hover:scale-110 transition opacity-50 ${isSelecting ? "opacity-100" : ""}`} onClick={() => { setIsSelecting(true); setIsErasing(false); setPencil(false); setCircle(false); setRectangle(false); }} />
       </div>
       {/* Canvas area */}
       <div className="grid grid-cols-[56px_1fr] w-full h-screen">
