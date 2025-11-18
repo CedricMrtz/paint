@@ -221,6 +221,14 @@ export default function Home() {
     }
   };
 
+  const saveDrawing = () => {
+    const canvas = canvasRef.current;
+    const link = document.createElement('a');
+    link.download = 'drawing.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
   return (
     <div className="flex flex-col w-full h-screen">
       {/* Option bar */}
@@ -231,6 +239,7 @@ export default function Home() {
         <img src="rectangle.svg" alt="select" className={`h-15 hover:scale-110 transition opacity-50 ${rectangle ? "opacity-100" : ""}`} onClick={() => { setRectangle(true); setCircle(false); setPencil(false); setIsErasing(false); setIsSelecting(false); }} />
         <img src="eraser.svg" alt="eraser" className={`h-15 hover:scale-110 transition opacity-50 ${isErasing ? "opacity-100" : ""}`} onClick={() => { setIsErasing(true); setPencil(false); setCircle(false); setRectangle(false); setIsSelecting(false); }} />
         <img src="select.svg" alt="layers" className={`h-15 hover:scale-110 transition opacity-50 ${isSelecting ? "opacity-100" : ""}`} onClick={() => { setIsSelecting(true); setIsErasing(false); setPencil(false); setCircle(false); setRectangle(false); }} />
+        <img src="save.svg" alt="save" className="h-15 hover:scale-110 transition opacity-50" onClick={() => saveDrawing()} />
         <img src="reset.svg" alt="reset" className="h-15 hover:scale-110 transition opacity-50" onClick={() => { resetCanvas(prev => !prev) }} />
       </div>
       {/* Canvas area */}
