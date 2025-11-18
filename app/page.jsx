@@ -9,6 +9,7 @@ export default function Home() {
   const [circle, setCircle] = useState(false);
   const [rectangle, setRectangle] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [bezierActive, setBezierActive] = useState(false);
   // Drawing modes
   const [isDrawing, setIsDrawing] = useState(false);
   const [initialPos, setInitialPos] = useState(null);
@@ -17,6 +18,7 @@ export default function Home() {
   const [color, setColor] = useState("#FFFFFF");
   const [brushSize, setBrushSize] = useState(20);
   const [reset, resetCanvas] = useState(false);
+  const [bezierPoints, setBezierPoints] = useState([]);
   // Resizing tools
   const [selectionArea, setSelectionArea] = useState(null);
   const [selectionImage, setSelectionImage] = useState(null);
@@ -92,6 +94,28 @@ export default function Home() {
       }
     }
 
+    if (bezierActive) {
+      const pt = { x, y };
+      setBezierPoints((prev) => {
+        const next = [...prev, pt];
+        if (next.length === 1) {
+          setTempImage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        }
+
+        if (next.length === 3) {
+          if (tempImage) ctx.putImageData(tempImage, 0, 0);
+          ctx.beginPath();
+          ctx.moveTo(next[0].x, next[0].y);
+          ctx.quadraticCurveTo(next[1].x, next[1].y, next[2].x, next[2].y);
+          ctx.stroke();
+          return [];
+        }
+
+        return next;
+      });
+      return;
+    }
+
     if (pencil || isErasing) {
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -136,6 +160,27 @@ export default function Home() {
       ctx.putImageData(selectionImage, newX, newY);
 
       setLastMouse({ x: mouseX, y: mouseY });
+      return;
+    }
+
+    if (bezierActive && bezierPoints.length > 0) {
+      if (!tempImage) return;
+      ctx.putImageData(tempImage, 0, 0);
+
+      if (bezierPoints.length === 1) {
+        ctx.beginPath();
+        ctx.moveTo(bezierPoints[0].x, bezierPoints[0].y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+
+      if (bezierPoints.length === 2) {
+        ctx.beginPath();
+        ctx.moveTo(bezierPoints[0].x, bezierPoints[0].y);
+        ctx.quadraticCurveTo(bezierPoints[1].x, bezierPoints[1].y, x, y);
+        ctx.stroke();
+      }
+
       return;
     }
 
@@ -234,11 +279,12 @@ export default function Home() {
       {/* Option bar */}
       <div className="flex justify-end items-center w-full mt-5 px-5 gap-5 bg-white">
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
-        <img src="pencil.svg" alt="pencil" className={`h-15 hover:scale-110 transition opacity-50 ${pencil ? "opacity-100" : ""}`} onClick={() => { setPencil(true); setIsErasing(false); setCircle(false); setRectangle(false); setIsSelecting(false); }} />
-        <img src="circle.svg" alt="circle" className={`h-15 hover:scale-110 transition opacity-50 ${circle ? "opacity-100" : ""}`} onClick={() => { setCircle(true); setRectangle(false); setPencil(false); setIsErasing(false); setIsSelecting(false); }} />
-        <img src="rectangle.svg" alt="select" className={`h-15 hover:scale-110 transition opacity-50 ${rectangle ? "opacity-100" : ""}`} onClick={() => { setRectangle(true); setCircle(false); setPencil(false); setIsErasing(false); setIsSelecting(false); }} />
-        <img src="eraser.svg" alt="eraser" className={`h-15 hover:scale-110 transition opacity-50 ${isErasing ? "opacity-100" : ""}`} onClick={() => { setIsErasing(true); setPencil(false); setCircle(false); setRectangle(false); setIsSelecting(false); }} />
-        <img src="select.svg" alt="layers" className={`h-15 hover:scale-110 transition opacity-50 ${isSelecting ? "opacity-100" : ""}`} onClick={() => { setIsSelecting(true); setIsErasing(false); setPencil(false); setCircle(false); setRectangle(false); }} />
+        <img src="pencil.svg" alt="pencil" className={`h-15 hover:scale-110 transition opacity-50 ${pencil ? "opacity-100" : ""}`} onClick={() => { setPencil(true); setIsErasing(false); setCircle(false); setRectangle(false); setIsSelecting(false); setBezierActive(false); }} />
+        <img src="beziercubica.svg" alt="bezier cubica" className={`h-15 hover:scale-110 transition opacity-50 ${bezierActive ? "opacity-100" : ""}`} onClick={() => { setBezierActive(true); setCircle(false); setPencil(false); setIsErasing(false); setIsSelecting(false); setRectangle(false); }} />
+        <img src="circle.svg" alt="circle" className={`h-15 hover:scale-110 transition opacity-50 ${circle ? "opacity-100" : ""}`} onClick={() => { setCircle(true); setRectangle(false); setPencil(false); setIsErasing(false); setIsSelecting(false); setBezierActive(false); }} />
+        <img src="rectangle.svg" alt="select" className={`h-15 hover:scale-110 transition opacity-50 ${rectangle ? "opacity-100" : ""}`} onClick={() => { setRectangle(true); setCircle(false); setPencil(false); setIsErasing(false); setIsSelecting(false); setBezierActive(false); }} />
+        <img src="eraser.svg" alt="eraser" className={`h-15 hover:scale-110 transition opacity-50 ${isErasing ? "opacity-100" : ""}`} onClick={() => { setIsErasing(true); setPencil(false); setCircle(false); setRectangle(false); setIsSelecting(false); setBezierActive(false); }} />
+        <img src="select.svg" alt="layers" className={`h-15 hover:scale-110 transition opacity-50 ${isSelecting ? "opacity-100" : ""}`} onClick={() => { setIsSelecting(true); setIsErasing(false); setPencil(false); setCircle(false); setRectangle(false); setBezierActive(false); }} />
         <img src="save.svg" alt="save" className="h-15 hover:scale-110 transition opacity-50" onClick={() => saveDrawing()} />
         <img src="reset.svg" alt="reset" className="h-15 hover:scale-110 transition opacity-50" onClick={() => { resetCanvas(prev => !prev) }} />
       </div>
