@@ -24,3 +24,52 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Vertical brush size slider */
+.brush-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 150px; /* visual length of the vertical slider */
+  height: 28px; /* thickness of the track area */
+  transform: rotate(-90deg);
+  transform-origin: center;
+  outline: none;
+  margin: 0;
+}
+
+.brush-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #e5e7eb; /* tailwind gray-200 */
+  border-radius: 4px;
+}
+
+.brush-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border: 2px solid #6b7280; /* tailwind gray-500 */
+  border-radius: 50%;
+  margin-top: -5px; /* center thumb on track */
+  cursor: pointer;
+}
+
+.brush-slider:focus::-webkit-slider-runnable-track {
+  background: #d1d5db;
+}
+
+.brush-slider::-moz-range-track {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.brush-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border: 2px solid #6b7280;
+  border-radius: 50%;
+  cursor: pointer;
+}
